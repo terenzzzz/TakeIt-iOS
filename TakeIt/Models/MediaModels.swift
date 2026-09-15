@@ -94,6 +94,12 @@ enum ClipboardHelper {
         return nil
         #endif
     }
+
+    static func pasteableString() -> String? {
+        let trimmed = string?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard PlatformDetector.looksLikeShareLink(trimmed) else { return nil }
+        return trimmed
+    }
 }
 
 enum PlatformDetector {
@@ -120,5 +126,13 @@ enum PlatformDetector {
             return false
         }
         return url.host != nil
+    }
+
+    static func looksLikeShareLink(_ raw: String) -> Bool {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        if detect(from: trimmed) != nil { return true }
+        if looksLikeURL(trimmed) { return true }
+        return trimmed.range(of: #"https?://"#, options: .regularExpression) != nil
     }
 }

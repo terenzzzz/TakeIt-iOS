@@ -23,18 +23,45 @@ struct TakeItTests {
         #expect(PlatformDetector.detect(from: "https://www.instagram.com/p/abc123/") == "instagram")
         #expect(PlatformDetector.detect(from: "https://instagr.am/reel/abc123") == "instagram")
         #expect(PlatformDetector.detect(from: "https://example.com/foo") == nil)
+        #expect(PlatformDetector.looksLikeShareLink("复制打开抖音 https://v.douyin.com/xxxxx/ 你好"))
+        #expect(PlatformDetector.looksLikeShareLink("https://www.instagram.com/p/abc123/"))
+        #expect(!PlatformDetector.looksLikeShareLink("随便一段文字"))
     }
 
-    @Test func instagramPlaybackStreamsDirectCDN() {
-        let proxy = URL(string: "https://takeit.terenzzzz.cn/api/download")!
-        let cdn = "https://scontent.cdninstagram.com/o1/v/t2/video.mp4"
-        let stream = MediaPlayback.videoStream(originalURL: cdn, proxyURL: proxy)
-        #expect(stream.url.absoluteString == cdn)
-        #expect(stream.headers["Referer"] == "https://www.instagram.com/")
+    @Test func videoPlaybackUsesDirectCDNExceptCloudflareHosts() {
+        let proxy = URL(string: "http://127.0.0.1:3001/api/download")!
 
-        let other = MediaPlayback.videoStream(originalURL: "https://video.twimg.com/a.mp4", proxyURL: proxy)
-        #expect(other.url == proxy)
-        #expect(other.headers.isEmpty)
+        let instagram = "https://scontent.cdninstagram.com/o1/v/t2/video.mp4"
+        let instagramStream = MediaPlayback.videoStream(originalURL: instagram, proxyURL: proxy)
+        #expect(instagramStream.url.absoluteString == instagram)
+        #expect(instagramStream.headers["Referer"] == "https://www.instagram.com/")
+
+        let xhs = "https://sns-video-bd.xhscdn.com/stream/abc.mp4"
+        let xhsStream = MediaPlayback.videoStream(originalURL: xhs, proxyURL: proxy)
+        #expect(xhsStream.url.absoluteString == xhs)
+        #expect(xhsStream.headers["Referer"] == "https://www.xiaohongshu.com/")
+
+        let douyin = "https://aweme.snssdk.com/aweme/v1/play/?video_id=abc"
+        let douyinStream = MediaPlayback.videoStream(originalURL: douyin, proxyURL: proxy)
+        #expect(douyinStream.url.absoluteString == douyin)
+        #expect(douyinStream.headers["Referer"] == "https://www.douyin.com/")
+
+        let twitter = "https://video.twimg.com/ext_tw_video/1/pu/vid/avc1/720x1280/clip.mp4"
+        let twitterStream = MediaPlayback.videoStream(originalURL: twitter, proxyURL: proxy)
+        #expect(twitterStream.url.absoluteString == twitter)
+        #expect(twitterStream.headers["Referer"] == "https://twitter.com/")
+
+        let pptcc = "https://www.ppt.cc/clip.mp4"
+        let pptccStream = MediaPlayback.videoStream(originalURL: pptcc, proxyURL: proxy)
+        #expect(pptccStream.url.absoluteString == pptcc)
+        #expect(pptccStream.headers["Referer"] == "https://ppt.cc/")
+
+        let lurl = MediaPlayback.videoStream(originalURL: "https://r2limit.example.com/a.mp4", proxyURL: proxy)
+        #expect(lurl.url == proxy)
+        #expect(lurl.headers.isEmpty)
+
+        let myppt = MediaPlayback.videoStream(originalURL: "https://cdn.myppt.cc/a.mp4", proxyURL: proxy)
+        #expect(myppt.url == proxy)
     }
 
     @Test func recentURLStoreKeepsLatestFiveUnique() {
@@ -60,7 +87,7 @@ struct TakeItTests {
     }
 
     @Test func downloadURLEncodesQueryItems() throws {
-        let base = URL(string: "http://localhost:3001")!
+        let base = URL(string: "http://127.0.0.1:3001")!
         let url = APIClient.downloadURL(
             baseURL: base,
             mediaURL: "https://cdn.example.com/file name.mp4",
@@ -76,10 +103,7 @@ struct TakeItTests {
     }
 
     @Test func productionAPIBaseURLIsDefault() {
-        #expect(AppConfig.defaultAPIBaseURL == "https://takeit.terenzzzz.cn")
-        #expect(AppConfig.isLegacyLocalDefault("http://localhost:3001"))
-        #expect(AppConfig.isLegacyLocalDefault("http://localhost:3001/"))
-        #expect(!AppConfig.isLegacyLocalDefault("https://takeit.terenzzzz.cn"))
+        #expect(AppConfig.defaultAPIBaseURL == "http://127.0.0.1:3001")
     }
 
     @Test func extractResultDefaultsWhenOptionalFieldsMissing() throws {
@@ -115,5 +139,11 @@ struct TakeItTests {
 
         let webm = Data([0x1A, 0x45, 0xDF, 0xA3]) + Data(repeating: 0, count: 12)
         #expect(MediaFormat.sniff(webm)?.fileExtension == "webm")
+    }
+
+    @Test func downloadProgressPercentText() {
+        #expect(DownloadProgressBar.percentText(0) == "0%")
+        #expect(DownloadProgressBar.percentText(0.42) == "42%")
+        #expect(DownloadProgressBar.percentText(1) == "100%")
     }
 }

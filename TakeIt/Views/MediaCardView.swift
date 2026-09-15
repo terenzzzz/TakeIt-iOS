@@ -20,6 +20,17 @@ struct MediaCardView: View {
         downloader.isDownloading(item)
     }
 
+    private var downloadFraction: Double? {
+        downloader.fraction(for: item)
+    }
+
+    private var downloadButtonTitle: String {
+        if downloading, let downloadFraction, downloadFraction > 0 {
+            return DownloadProgressBar.percentText(downloadFraction)
+        }
+        return downloading ? "下载中" : "下载"
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ZStack(alignment: .topLeading) {
@@ -27,6 +38,12 @@ struct MediaCardView: View {
                 preview
                 typeTag
                     .padding(10)
+                if downloading {
+                    VStack {
+                        Spacer()
+                        DownloadProgressBar(fraction: downloadFraction)
+                    }
+                }
             }
             .aspectRatio(16 / 9, contentMode: .fit)
             .clipped()
@@ -43,12 +60,15 @@ struct MediaCardView: View {
                 } label: {
                     HStack(spacing: 6) {
                         if downloading {
-                            ProgressView().controlSize(.mini)
+                            if downloadFraction == nil {
+                                ProgressView().controlSize(.mini)
+                            }
                         } else {
                             Image(systemName: "arrow.down.to.line")
                                 .font(.system(size: 12, weight: .semibold))
                         }
-                        Text(downloading ? "下载中" : "下载")
+                        Text(downloadButtonTitle)
+                            .monospacedDigit()
                     }
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.text)
@@ -63,7 +83,6 @@ struct MediaCardView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(downloading)
-                .opacity(downloading ? 0.5 : 1)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -151,6 +170,34 @@ struct MediaCardView: View {
     }
 }
 
+struct DownloadProgressBar: View {
+    var fraction: Double?
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Rectangle().fill(Color.white.opacity(0.22))
+                if let fraction {
+                    Rectangle()
+                        .fill(Color.white)
+                        .frame(width: max(6, geo.size.width * fraction))
+                } else {
+                    ProgressView()
+                        .progressViewStyle(.linear)
+                        .tint(.white)
+                        .padding(.horizontal, 0)
+                }
+            }
+        }
+        .frame(height: 3)
+        .animation(.easeOut(duration: 0.15), value: fraction)
+    }
+
+    static func percentText(_ fraction: Double) -> String {
+        "\(Int((fraction * 100).rounded()))%"
+    }
+}
+
 private struct LoopingVideoPreview: View {
     let stream: MediaPlayback.Stream
     var posterURL: URL?
@@ -228,32 +275,62 @@ enum MediaPlayback {
     }
 
     static func videoStream(originalURL: String, proxyURL: URL) -> Stream {
-        guard let url = URL(string: originalURL), let referer = referer(for: url) else {
+        guard let url = URL(string: originalURL),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https"
+        else {
             return Stream(url: proxyURL, headers: [:])
         }
-        return Stream(
-            url: url,
-            headers: [
-                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
-                "Accept": "*/*",
-                "Referer": referer,
-                "Origin": "https://www.instagram.com",
-            ]
-        )
+
+        let host = url.host?.lowercased() ?? ""
+        if needsDownloadProxy(host) {
+            return Stream(url: proxyURL, headers: [:])
+        }
+        guard let referer = referer(for: url) else {
+            return Stream(url: proxyURL, headers: [:])
+        }
+        return Stream(url: url, headers: streamHeaders(referer: referer))
     }
 
     static func referer(for url: URL) -> String? {
         let host = url.host?.lowercased() ?? ""
-        if host.contains("instagram.com")
-            || host.contains("instagr.am")
-            || host.contains("cdninstagram.com")
+        if matches(host, ["instagram.com", "instagr.am", "cdninstagram.com", "ddinstagram.com", "kkinstagram.com"])
             || host.contains("fbcdn.net")
-            || host.contains("scontent")
-            || host.contains("ddinstagram.com")
-            || host.contains("kkinstagram.com") {
+            || host.contains("scontent") {
             return "https://www.instagram.com/"
         }
+        if matches(host, ["xiaohongshu.com", "xhscdn.com", "xhslink.com", "xhslink.cn", "rednote.com"]) {
+            return "https://www.xiaohongshu.com/"
+        }
+        if host.contains("douyin")
+            || matches(host, ["iesdouyin.com", "snssdk.com", "ixigua.com"])
+            || host.contains("bytecdn") {
+            return "https://www.douyin.com/"
+        }
+        if matches(host, ["twitter.com", "twimg.com"]) || host == "x.com" || host.hasSuffix(".x.com") {
+            return "https://twitter.com/"
+        }
+        if matches(host, ["ppt.cc"]) {
+            return "https://ppt.cc/"
+        }
         return nil
+    }
+
+    static func needsDownloadProxy(_ host: String) -> Bool {
+        matches(host, ["lurl.cc", "myppt.cc"]) || host.contains("r2limit")
+    }
+
+    private static func streamHeaders(referer: String) -> [String: String] {
+        [
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+            "Accept": "*/*",
+            "Referer": referer,
+            "Origin": referer.hasSuffix("/") ? String(referer.dropLast()) : referer,
+        ]
+    }
+
+    private static func matches(_ host: String, _ domains: [String]) -> Bool {
+        domains.contains { host == $0 || host.hasSuffix(".\($0)") }
     }
 }
 

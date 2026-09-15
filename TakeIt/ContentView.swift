@@ -1,10 +1,4 @@
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-#endif
-#if os(macOS)
-import AppKit
-#endif
 
 struct ContentView: View {
     @Environment(ExtractorStore.self) private var extractor
@@ -14,7 +8,6 @@ struct ContentView: View {
 
     @State private var url = ""
     @State private var showSettings = false
-    @State private var clipboardHint: String?
 
     var body: some View {
         @Bindable var extractor = extractor
@@ -34,9 +27,6 @@ struct ContentView: View {
                             onSubmit: submit,
                             onClear: clear
                         )
-                        if let clipboardHint {
-                            clipboardBanner(clipboardHint)
-                        }
                         if let error = extractor.errorMessage {
                             errorBanner(error)
                         }
@@ -92,12 +82,6 @@ struct ContentView: View {
             ActivityView(items: payload.urls)
         }
         #endif
-        .onAppear {
-            inspectClipboard()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: sceneDidBecomeActive)) { _ in
-            inspectClipboard()
-        }
         .onChange(of: downloader.toastMessage) { _, newValue in
             guard newValue != nil else { return }
             Task {
@@ -123,12 +107,11 @@ struct ContentView: View {
             VStack(spacing: 2) {
                 Text("一键解析提取")
                 Text("公开媒体")
-                    .underline(color: Theme.borderHover)
             }
             .font(.system(size: 32, weight: .heavy))
             .foregroundStyle(Theme.text)
 
-            Text("粘贴 MyPPT、LURL、PPT.cc、Twitter/X、抖音或 Instagram 分享链接（支持整段分享文案），即可批量解析与下载原质图片与视频。")
+            Text("粘贴分享链接，即可批量解析与下载原质图片与视频。")
                 .font(.system(size: 15))
                 .foregroundStyle(Theme.textMuted)
                 .multilineTextAlignment(.center)
@@ -173,14 +156,23 @@ struct ContentView: View {
                     Button {
                         Task { await downloader.downloadAll(result.media) }
                     } label: {
-                        HStack(spacing: 6) {
-                            if downloader.isDownloadingAll {
-                                ProgressView().controlSize(.mini).tint(Theme.primaryText)
-                            } else {
-                                Image(systemName: "arrow.down.to.line")
-                                    .font(.system(size: 12, weight: .semibold))
+                        VStack(alignment: .trailing, spacing: 5) {
+                            HStack(spacing: 6) {
+                                if downloader.isDownloadingAll {
+                                    Text(downloader.batchLabel)
+                                        .monospacedDigit()
+                                } else {
+                                    Image(systemName: "arrow.down.to.line")
+                                        .font(.system(size: 12, weight: .semibold))
+                                }
+                                Text("全部下载")
                             }
-                            Text("全部下载")
+                            if downloader.isDownloadingAll {
+                                ProgressView(value: downloader.batchFraction)
+                                    .progressViewStyle(.linear)
+                                    .tint(Theme.primaryText)
+                                    .frame(width: 92)
+                            }
                         }
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Theme.primaryText)
@@ -222,33 +214,6 @@ struct ContentView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.radiusMD, style: .continuous))
     }
 
-    private func clipboardBanner(_ hint: String) -> some View {
-        Button {
-            url = hint
-            clipboardHint = nil
-            submit()
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "doc.on.clipboard")
-                Text("剪贴板里有链接")
-                    .font(.system(size: 13, weight: .medium))
-                Spacer(minLength: 0)
-                Text("提取")
-                    .font(.system(size: 12, weight: .semibold))
-            }
-            .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(Theme.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.radiusMD, style: .continuous)
-                    .stroke(Theme.border, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Theme.radiusMD, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-
     private func toastBanner(_ message: String) -> some View {
         VStack {
             Spacer()
@@ -280,22 +245,11 @@ struct ContentView: View {
         let trimmed = url.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         recents.add(trimmed)
-        clipboardHint = nil
         Task { await extractor.extract(trimmed) }
     }
 
     private func clear() {
         extractor.reset()
-        clipboardHint = nil
-    }
-
-    private func inspectClipboard() {
-        guard let pasted = ClipboardHelper.string?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !pasted.isEmpty,
-              pasted != url,
-              PlatformDetector.detect(from: pasted) != nil
-        else { return }
-        clipboardHint = pasted
     }
 
     private func applyIncomingURL(_ incoming: URL) {
@@ -303,16 +257,6 @@ struct ContentView: View {
             url = extracted
             submit()
         }
-    }
-
-    private var sceneDidBecomeActive: Notification.Name {
-        #if os(iOS)
-        UIApplication.didBecomeActiveNotification
-        #elseif os(macOS)
-        NSApplication.didBecomeActiveNotification
-        #else
-        Notification.Name("DidBecomeActive")
-        #endif
     }
 }
 

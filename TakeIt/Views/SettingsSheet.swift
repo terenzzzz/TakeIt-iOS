@@ -10,7 +10,7 @@ struct SettingsSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("https://takeit.terenzzzz.cn", text: $apiBaseURL)
+                    TextField("http://127.0.0.1:3001", text: $apiBaseURL)
                         .autocorrectionDisabled()
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
@@ -19,7 +19,7 @@ struct SettingsSheet: View {
                 } header: {
                     Text("后端 API 地址")
                 } footer: {
-                    Text("默认连接 takeit.terenzzzz.cn。本地调试可改为 http://localhost:3001。")
+                    Text("请填写你自行部署的 takeit-backend 地址。默认使用本地调试地址 http://127.0.0.1:3001。")
                 }
 
                 Section("状态") {

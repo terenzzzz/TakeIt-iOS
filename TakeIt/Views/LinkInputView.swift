@@ -10,6 +10,7 @@ struct LinkInputView: View {
     @FocusState private var isFocused: Bool
     @State private var showRecent = false
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.scenePhase) private var scenePhase
 
     private var canSubmit: Bool {
         !loading && !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -32,6 +33,10 @@ struct LinkInputView: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: Theme.radiusMD, style: .continuous))
             .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
+            .onAppear { pasteFromClipboardIfNeeded() }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { pasteFromClipboardIfNeeded() }
+            }
 
             if showRecent && !recentURLs.isEmpty {
                 recentDropdown
@@ -44,6 +49,7 @@ struct LinkInputView: View {
             HStack(spacing: 8) {
                 textField
                 if !url.isEmpty { clearButton }
+                pasteButton
             }
             .padding(.horizontal, 8)
             .frame(minHeight: 48)
@@ -60,6 +66,7 @@ struct LinkInputView: View {
                 .padding(.leading, 10)
             textField
             if !url.isEmpty { clearButton }
+            pasteButton
             submitButton
         }
     }
@@ -82,6 +89,7 @@ struct LinkInputView: View {
                 showRecent = focused && !recentURLs.isEmpty
             }
             .onChange(of: url) { oldValue, newValue in
+                guard isFocused else { return }
                 handlePaste(oldValue: oldValue, newValue: newValue)
             }
             .accessibilityLabel("分享链接")
@@ -100,6 +108,29 @@ struct LinkInputView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("清除链接")
+    }
+
+    private var pasteButton: some View {
+        Button(action: pasteFromClipboard) {
+            HStack(spacing: 5) {
+                Image(systemName: "doc.on.clipboard")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("粘贴")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .foregroundStyle(Theme.text)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Theme.surfaceHover)
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.radiusSM, style: .continuous)
+                    .stroke(Theme.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: Theme.radiusSM, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(loading)
+        .accessibilityLabel("粘贴")
     }
 
     private var submitButton: some View {
@@ -179,9 +210,35 @@ struct LinkInputView: View {
         let clipboard = ClipboardHelper.string?.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != previous,
               trimmed == clipboard,
-              PlatformDetector.looksLikeURL(trimmed)
+              PlatformDetector.looksLikeShareLink(trimmed)
         else { return }
+        submitPasted()
+    }
+
+    private func pasteFromClipboard() {
+        guard let pasted = ClipboardHelper.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !pasted.isEmpty else { return }
+        applyPasted(pasted)
+    }
+
+    private func pasteFromClipboardIfNeeded() {
+        guard !loading, !isFocused else { return }
+        guard let pasted = ClipboardHelper.pasteableString() else { return }
+        let current = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard current != pasted else { return }
+        applyPasted(pasted)
+    }
+
+    private func applyPasted(_ pasted: String) {
+        isFocused = false
+        url = pasted
+        submitPasted()
+    }
+
+    private func submitPasted() {
         showRecent = false
+        isFocused = false
+        guard !loading, PlatformDetector.looksLikeShareLink(url) else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             onSubmit()
         }

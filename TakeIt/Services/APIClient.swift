@@ -67,16 +67,27 @@ struct APIClient {
         downloadURL(for: mediaURL, filename: filename, inline: true)
     }
 
-    func downloadData(mediaURL: String, filename: String) async throws -> (Data, String?) {
+    func downloadData(
+        mediaURL: String,
+        filename: String,
+        onProgress: (@Sendable (Double?) -> Void)? = nil
+    ) async throws -> (Data, String?) {
         let endpoint = downloadURL(for: mediaURL, filename: filename, inline: false)
         var request = URLRequest(url: endpoint)
         request.httpMethod = "GET"
         request.timeoutInterval = AppConfig.resourceTimeout
-        let (data, response) = try await perform(request)
+
+        let delegate = DownloadProgressDelegate { fraction in
+            onProgress?(fraction)
+        }
+        let (tempURL, response) = try await session.download(for: request, delegate: delegate)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            let data = (try? Data(contentsOf: tempURL)) ?? Data()
             throw APIError.from(data: data, statusCode: (response as? HTTPURLResponse)?.statusCode ?? 500)
         }
+        let data = try Data(contentsOf: tempURL)
         guard !data.isEmpty else { throw MediaSaveError.emptyFile }
+        onProgress?(1)
         return (data, http.value(forHTTPHeaderField: "Content-Type"))
     }
 
@@ -98,6 +109,25 @@ struct APIClient {
             return try await session.data(for: request)
         } catch {
             throw APIError(code: "NETWORK", message: APIError.message(for: "NETWORK"), statusCode: nil)
+        }
+    }
+}
+
+private final class DownloadProgressDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+    let onProgress: @Sendable (Double?) -> Void
+    private var observation: NSKeyValueObservation?
+
+    init(onProgress: @escaping @Sendable (Double?) -> Void) {
+        self.onProgress = onProgress
+    }
+
+    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+        observation = task.progress.observe(\.fractionCompleted, options: [.new]) { [onProgress] progress, _ in
+            if progress.isIndeterminate || progress.totalUnitCount <= 0 {
+                onProgress(nil)
+                return
+            }
+            onProgress(min(1, max(0, progress.fractionCompleted)))
         }
     }
 }
