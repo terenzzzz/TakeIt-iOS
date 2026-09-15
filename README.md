@@ -17,6 +17,7 @@
 - **后端健康检查**：顶部显示在线 / 离线，设置页可修改 API 地址并立即探测
 - **深色模式**：跟随系统浅色 / 深色外观
 - **URL Scheme**：支持 `takeit://` 从其他 App 唤起并自动解析
+- **系统分享**：在 Safari、Twitter / X 等点分享，选 TakeIt，再点「打开 TakeIt」即可跳转解析
 
 ## 环境要求
 
@@ -46,7 +47,7 @@ npm run dev
 open TakeIt.xcodeproj
 ```
 
-模拟器：顶部设备列表选任意 iPhone 模拟器，按 `⌘R` 运行。
+模拟器：顶部设备列表选任意 iPhone 模拟器，按 `⌘R` 运行。左上角 Scheme 请选 **TakeIt**（不要选 TakeItShare，那是分享扩展，不能单独启动）。
 
 装到自己的手机：按下一节操作。
 
@@ -75,12 +76,14 @@ open TakeIt.xcodeproj
    com.你的名字.TakeIt
    ```
 
+   同时把 Target **TakeItShare** 的 Bundle ID 改成同一个前缀加 `.Share`，例如 `com.你的名字.TakeIt.Share`，Team 选同一个账号。分享扩展必须嵌在主 App 里，否则系统分享菜单里不会出现 TakeIt。
+
 出现红色签名错误时，先看 Xcode 提示：常见原因是没选 Team、Bundle ID 冲突，或手机未开启开发者模式。
 
 ### 编译安装
 
-1. Xcode 顶部设备列表选中你的 **iPhone**（不要选模拟器）。
-2. 按 `⌘R`，或菜单 **Product → Run**。
+1. 左上角 Scheme 选 **TakeIt**，设备选中你的 **iPhone**（不要选模拟器）。
+2. 按 `⌘R`，或菜单 **Product → Run**。分享扩展会随主 App 一起安装。
 3. 第一次安装后，桌面会出现 TakeIt 图标，但可能还不能打开，需要信任证书：
    - 设置 → 通用 → VPN 与设备管理（或「设备管理」）
    - 点你的 Apple ID 对应的开发者描述文件 → **信任**
@@ -133,6 +136,9 @@ open TakeIt.xcodeproj
 | Bundle Identifier 无法注册 | 改成独一无二的 ID |
 | 顶部一直「离线」 | 真机不要用 `127.0.0.1`，改成电脑局域网 IP 或已部署的后端 |
 | 能装上但解析失败 | 先确认 `/health` 通了，再检查后端日志与链接是否受支持 |
+| 其他 App 分享列表里没有 TakeIt | 用 Scheme **TakeIt** 重新安装主 App；分享面板滑到最右点「更多」，打开 TakeIt |
+| 选了 TakeIt 一闪就消失、主 App 没打开 | 扩展会先显示链接，再点 **「打开 TakeIt」**。系统不允许分享扩展在后台偷偷拉起主 App |
+| Xcode 只剩 TakeItShare、没有 TakeIt | 工程已带共享 Scheme。关掉再打开工程，或 Product → Scheme → Manage Schemes 勾选 TakeIt |
 
 ## 配置
 
@@ -163,6 +169,24 @@ takeit://https://x.com/user/status/1
 
 传入 `http` / `https` 链接时也会直接填入并提交解析。
 
+## 从其他 App 分享到 TakeIt
+
+系统分享菜单**不会**因为自定义 URL Scheme 就出现 App 图标。TakeIt 通过分享扩展（`TakeItShare`）出现在分享列表里。
+
+1. 用 Xcode 以 Scheme **TakeIt** 重新编译并安装主 App（扩展会一起装上）。
+2. 在 Safari、Twitter / X、Instagram 等打开一条内容，点「分享」。
+3. 在第一排 App 图标里找 **TakeIt**。若没有：
+   - 滑到最右侧，点「更多」或编辑按钮
+   - 打开 TakeIt 的开关，并可拖到前面
+4. 选中后会出现扩展界面，确认链接后点 **「打开 TakeIt」**。
+5. 主 App 打开后会带上分享链接或整段分享文案，并开始解析。
+
+iOS 不允许分享扩展在后台自动拉起主 App，所以必须再点一次「打开 TakeIt」。这是系统限制，不是安装失败。
+
+只分享图片、没有链接时，TakeIt 不会出现在列表里。这是刻意的：解析需要的是网页 / 分享链接。
+
+部分 App（抖音、微信等）用自己的分享面板，不一定会列出系统扩展。这时先「复制链接」或「复制分享文案」，再回到 TakeIt 粘贴即可。
+
 ## 支持平台
 
 | 平台 | 域名 |
@@ -178,6 +202,8 @@ takeit://https://x.com/user/status/1
 ## 项目结构
 
 ```
+Shared/
+└── IncomingURLParser.swift      # takeit:// 与分享文案抽链
 TakeIt/
 ├── TakeItApp.swift              # App 入口与环境对象
 ├── ContentView.swift            # 主界面与 URL Scheme 解析
@@ -189,9 +215,11 @@ TakeIt/
 │   ├── DownloadManager.swift    # 单文件与批量下载
 │   ├── MediaSaver.swift         # 缓存写入与格式嗅探
 │   ├── HealthMonitor.swift      # 后端健康检查
-│   └── RecentURLStore.swift     # 最近链接
+│   ├── RecentURLStore.swift     # 最近链接
+│   └── PendingShareStore.swift  # 分享扩展唤起后的待解析链接
 ├── Views/                       # 输入框、媒体网格、设置、密码弹窗等
 └── Theme/                       # 颜色与圆角
+TakeItShare/                     # 系统分享扩展：读取链接并打开主 App
 TakeItTests/                     # Swift Testing 单元测试
 ```
 
@@ -202,7 +230,7 @@ TakeItTests/                     # Swift Testing 单元测试
 - 平台识别与分享文案提取
 - 错误码文案
 - 下载 URL 编码
-- URL Scheme 解析
+- URL Scheme 与分享文案抽链
 - 媒体格式嗅探
 - 最近链接去重与上限
 

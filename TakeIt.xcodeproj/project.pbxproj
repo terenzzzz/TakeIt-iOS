@@ -21,12 +21,38 @@
 			remoteGlobalIDString = A011573430579561008B758C;
 			remoteInfo = TakeIt;
 		};
+		A011580830579563008B758C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A011572D30579561008B758C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A011580230579563008B758C;
+			remoteInfo = TakeItShare;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXBuildFile section */
+		A011580B30579563008B758C /* TakeItShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A011580130579563008B758C /* TakeItShare.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A011580A30579563008B758C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A011580B30579563008B758C /* TakeItShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A011573530579561008B758C /* TakeIt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TakeIt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A011574230579563008B758C /* TakeItTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TakeItTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A011574C30579563008B758C /* TakeItUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TakeItUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A011580130579563008B758C /* TakeItShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TakeItShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -48,6 +74,23 @@
 			path = TakeItUITests;
 			sourceTree = "<group>";
 		};
+		A011580630579563008B758C /* TakeItShare */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A011580730579563008B758C /* Exceptions for "TakeItShare" folder in "TakeItShare" target */,
+			);
+			path = TakeItShare;
+			sourceTree = "<group>";
+		};
+		A011580F30579563008B758C /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A011581130579563008B758C /* Exceptions for "Shared" folder in "TakeIt" target */,
+				A011581230579563008B758C /* Exceptions for "Shared" folder in "TakeItShare" target */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,6 +101,25 @@
 				TakeIt.entitlements,
 			);
 			target = A011573430579561008B758C /* TakeIt */;
+		};
+		A011580730579563008B758C /* Exceptions for "TakeItShare" folder in "TakeItShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A011580230579563008B758C /* TakeItShare */;
+		};
+		A011581130579563008B758C /* Exceptions for "Shared" folder in "TakeIt" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+			);
+			target = A011573430579561008B758C /* TakeIt */;
+		};
+		A011581230579563008B758C /* Exceptions for "Shared" folder in "TakeItShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+			);
+			target = A011580230579563008B758C /* TakeItShare */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -83,13 +145,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A011580430579563008B758C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		A011572C30579561008B758C = {
 			isa = PBXGroup;
 			children = (
+				A011580F30579563008B758C /* Shared */,
 				A011573730579561008B758C /* TakeIt */,
+				A011580630579563008B758C /* TakeItShare */,
 				A011574530579563008B758C /* TakeItTests */,
 				A011574F30579563008B758C /* TakeItUITests */,
 				A011573630579561008B758C /* Products */,
@@ -100,6 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				A011573530579561008B758C /* TakeIt.app */,
+				A011580130579563008B758C /* TakeItShare.appex */,
 				A011574230579563008B758C /* TakeItTests.xctest */,
 				A011574C30579563008B758C /* TakeItUITests.xctest */,
 			);
@@ -116,13 +188,16 @@
 				A011573130579561008B758C /* Sources */,
 				A011573230579561008B758C /* Frameworks */,
 				A011573330579561008B758C /* Resources */,
+				A011580A30579563008B758C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A011580930579563008B758C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A011573730579561008B758C /* TakeIt */,
+				A011580F30579563008B758C /* Shared */,
 			);
 			name = TakeIt;
 			packageProductDependencies = (
@@ -177,6 +252,29 @@
 			productReference = A011574C30579563008B758C /* TakeItUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		A011580230579563008B758C /* TakeItShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A011580E30579563008B758C /* Build configuration list for PBXNativeTarget "TakeItShare" */;
+			buildPhases = (
+				A011580330579563008B758C /* Sources */,
+				A011580430579563008B758C /* Frameworks */,
+				A011580530579563008B758C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A011580630579563008B758C /* TakeItShare */,
+				A011580F30579563008B758C /* Shared */,
+			);
+			name = TakeItShare;
+			packageProductDependencies = (
+			);
+			productName = TakeItShare;
+			productReference = A011580130579563008B758C /* TakeItShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -198,6 +296,9 @@
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = A011573430579561008B758C;
 					};
+					A011580230579563008B758C = {
+						CreatedOnToolsVersion = 26.6;
+					};
 				};
 			};
 			buildConfigurationList = A011573030579561008B758C /* Build configuration list for PBXProject "TakeIt" */;
@@ -215,6 +316,7 @@
 			projectRoot = "";
 			targets = (
 				A011573430579561008B758C /* TakeIt */,
+				A011580230579563008B758C /* TakeItShare */,
 				A011574130579563008B758C /* TakeItTests */,
 				A011574B30579563008B758C /* TakeItUITests */,
 			);
@@ -237,6 +339,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A011574A30579563008B758C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A011580530579563008B758C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -267,6 +376,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A011580330579563008B758C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -279,6 +395,11 @@
 			isa = PBXTargetDependency;
 			target = A011573430579561008B758C /* TakeIt */;
 			targetProxy = A011574D30579563008B758C /* PBXContainerItemProxy */;
+		};
+		A011580930579563008B758C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A011580230579563008B758C /* TakeItShare */;
+			targetProxy = A011580830579563008B758C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -607,6 +728,74 @@
 			};
 			name = Release;
 		};
+		A011580C30579563008B758C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YACSVQ6U8M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TakeItShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TakeIt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tenenzzzz.TakeIt.Share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A011580D30579563008B758C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YACSVQ6U8M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TakeItShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TakeIt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tenenzzzz.TakeIt.Share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -642,6 +831,15 @@
 			buildConfigurations = (
 				A011575D30579563008B758C /* Debug */,
 				A011575E30579563008B758C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A011580E30579563008B758C /* Build configuration list for PBXNativeTarget "TakeItShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A011580C30579563008B758C /* Debug */,
+				A011580D30579563008B758C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

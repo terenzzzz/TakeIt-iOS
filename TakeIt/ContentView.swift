@@ -5,6 +5,7 @@ struct ContentView: View {
     @Environment(RecentURLStore.self) private var recents
     @Environment(DownloadManager.self) private var downloader
     @Environment(HealthMonitor.self) private var health
+    @Environment(PendingShareStore.self) private var pendingShare
 
     @State private var url = ""
     @State private var showSettings = false
@@ -91,8 +92,11 @@ struct ContentView: View {
                 }
             }
         }
-        .onOpenURL { incoming in
-            applyIncomingURL(incoming)
+        .onChange(of: pendingShare.payload) { _, _ in
+            applyPendingShare()
+        }
+        .onAppear {
+            applyPendingShare()
         }
     }
 
@@ -252,31 +256,10 @@ struct ContentView: View {
         extractor.reset()
     }
 
-    private func applyIncomingURL(_ incoming: URL) {
-        if let extracted = IncomingURLParser.shareURL(from: incoming) {
-            url = extracted
-            submit()
-        }
-    }
-}
-
-enum IncomingURLParser {
-    static func shareURL(from incoming: URL) -> String? {
-        if incoming.scheme?.lowercased() == "takeit" {
-            let components = URLComponents(url: incoming, resolvingAgainstBaseURL: false)
-            if let nested = components?.queryItems?.first(where: { $0.name == "url" })?.value,
-               !nested.isEmpty {
-                return nested
-            }
-            let path = incoming.absoluteString.replacingOccurrences(of: "takeit://", with: "")
-            if path.hasPrefix("http") {
-                return path
-            }
-        }
-        if incoming.scheme == "http" || incoming.scheme == "https" {
-            return incoming.absoluteString
-        }
-        return nil
+    private func applyPendingShare() {
+        guard let payload = pendingShare.consume(), !payload.isEmpty else { return }
+        url = payload
+        submit()
     }
 }
 
@@ -286,4 +269,5 @@ enum IncomingURLParser {
         .environment(RecentURLStore())
         .environment(DownloadManager())
         .environment(HealthMonitor())
+        .environment(PendingShareStore())
 }

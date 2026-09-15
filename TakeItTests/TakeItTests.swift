@@ -124,6 +124,19 @@ struct TakeItTests {
         #expect(IncomingURLParser.shareURL(from: direct) == "https://x.com/user/status/1")
     }
 
+    @Test func sharePayloadKeepsFullShareCopy() {
+        #expect(IncomingURLParser.sharePayload(fromText: "https://lurl.cc/abc") == "https://lurl.cc/abc")
+        #expect(
+            IncomingURLParser.sharePayload(fromText: "复制打开抖音 https://v.douyin.com/xxxxx/ 你好")
+            == "复制打开抖音 https://v.douyin.com/xxxxx/ 你好"
+        )
+        #expect(IncomingURLParser.httpURL(fromText: "看这个 https://xhslink.com/abc。") == "https://xhslink.com/abc")
+        #expect(IncomingURLParser.sharePayload(fromText: "随便一段文字") == nil)
+
+        let openURL = IncomingURLParser.takeItOpenURL(for: "https://lurl.cc/abc")
+        #expect(IncomingURLParser.shareURL(from: openURL!) == "https://lurl.cc/abc")
+    }
+
     @Test func mediaFormatSniffsCommonHeaders() {
         let jpeg = Data([0xFF, 0xD8, 0xFF, 0xE0]) + Data(repeating: 0, count: 12)
         #expect(MediaFormat.sniff(jpeg)?.fileExtension == "jpg")
