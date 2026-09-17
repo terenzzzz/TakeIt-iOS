@@ -1,16 +1,23 @@
 import Foundation
 
 enum MediaSaver {
-    static func save(_ data: Data, item: MediaItem, contentType: String? = nil) throws -> URL {
+    static func save(
+        _ data: Data,
+        item: MediaItem,
+        filename requestedName: String? = nil,
+        contentType: String? = nil
+    ) throws -> URL {
         guard !data.isEmpty else { throw MediaSaveError.emptyFile }
 
+        let name = requestedName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let baseName = (name?.isEmpty == false ? name! : item.displayName)
         let format = MediaFormat.detect(
             data: data,
-            filename: item.displayName,
+            filename: baseName,
             contentType: contentType,
             fallback: item.type
         )
-        let filename = sanitizedFilename(item.displayName, fileExtension: format.fileExtension)
+        let filename = sanitizedFilename(baseName, fileExtension: format.fileExtension)
         let fileURL = uniqueURL(in: try cacheDirectory(), filename: filename)
         try data.write(to: fileURL, options: .atomic)
         return fileURL

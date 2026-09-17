@@ -238,11 +238,11 @@ struct ContentView: View {
             .font(.system(size: 12))
             .foregroundStyle(Theme.textMuted)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 18)
+            .padding(.vertical, 10)
             .overlay(alignment: .top) {
                 Rectangle().fill(Theme.border).frame(height: 1)
             }
-            .background(Theme.bg.opacity(0.92))
+            .background(Theme.bg)
     }
 
     private func submit() {

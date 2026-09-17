@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A011580B30579563008B758C /* TakeItShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A011580130579563008B758C /* TakeItShare.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A011574330579563008B758C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -30,10 +34,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXBuildFile section */
-		A011580B30579563008B758C /* TakeItShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A011580130579563008B758C /* TakeItShare.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		A011580A30579563008B758C /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -54,6 +54,23 @@
 		A011574C30579563008B758C /* TakeItUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TakeItUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A011580130579563008B758C /* TakeItShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TakeItShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A011576030579563008B758C /* Exceptions for "TakeIt" folder in "TakeIt" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A011573430579561008B758C /* TakeIt */;
+		};
+		A011580730579563008B758C /* Exceptions for "TakeItShare" folder in "TakeItShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A011580230579563008B758C /* TakeItShare */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A011573730579561008B758C /* TakeIt */ = {
@@ -84,44 +101,10 @@
 		};
 		A011580F30579563008B758C /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				A011581130579563008B758C /* Exceptions for "Shared" folder in "TakeIt" target */,
-				A011581230579563008B758C /* Exceptions for "Shared" folder in "TakeItShare" target */,
-			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A011576030579563008B758C /* Exceptions for "TakeIt" folder in "TakeIt" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-				TakeIt.entitlements,
-			);
-			target = A011573430579561008B758C /* TakeIt */;
-		};
-		A011580730579563008B758C /* Exceptions for "TakeItShare" folder in "TakeItShare" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = A011580230579563008B758C /* TakeItShare */;
-		};
-		A011581130579563008B758C /* Exceptions for "Shared" folder in "TakeIt" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-			);
-			target = A011573430579561008B758C /* TakeIt */;
-		};
-		A011581230579563008B758C /* Exceptions for "Shared" folder in "TakeItShare" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-			);
-			target = A011580230579563008B758C /* TakeItShare */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A011573230579561008B758C /* Frameworks */ = {
@@ -539,15 +522,15 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TakeIt/Info.plist;
-				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -592,15 +575,15 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TakeIt/Info.plist;
-				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "TakeIt 需要将解析出的图片和视频保存到相册。";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

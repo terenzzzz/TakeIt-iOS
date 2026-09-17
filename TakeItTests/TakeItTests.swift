@@ -116,6 +116,35 @@ struct TakeItTests {
         #expect(result.media[0].displayName == "download")
     }
 
+    @Test func videoQualitiesDecodeDedupeAndNameFiles() throws {
+        let json = Data(#"""
+        {"platform":"twitter","media":[{"type":"video","url":"https://video.twimg.com/768.mp4",
+        "filename":"twitter-video-1.mp4","qualities":[
+        {"url":"https://video.twimg.com/768.mp4","label":"768p","width":1280,"height":768,"bitrate":2176000},
+        {"url":"https://video.twimg.com/480.mp4","label":"480p"},
+        {"url":"https://video.twimg.com/768.mp4","label":"重复"}]}]}
+        """#.utf8)
+        let result = try JSONDecoder().decode(ExtractResult.self, from: json)
+        let video = try #require(result.media.first)
+
+        #expect(video.qualityOptions.map(\.displayLabel) == ["768p", "480p"])
+        #expect(video.downloadURL(for: video.qualityOptions[1]) == "https://video.twimg.com/480.mp4")
+        #expect(video.filename(for: video.qualityOptions[1]) == "twitter-video-1-480p.mp4")
+        #expect(video.filename(for: nil) == "twitter-video-1.mp4")
+
+        let single = MediaItem(
+            type: .video,
+            url: "https://cdn.example.com/a.mp4",
+            filename: "a.mp4",
+            qualities: [VideoQuality(url: "https://cdn.example.com/a.mp4", label: "1080p")]
+        )
+        #expect(single.filename(for: single.qualityOptions.first) == "a.mp4")
+
+        let image = MediaItem(type: .image, url: "https://cdn.example.com/a.jpg")
+        #expect(image.qualityOptions.isEmpty)
+        #expect(VideoQuality(url: "https://cdn.example.com/a.mp4", height: 720).displayLabel == "720p")
+    }
+
     @Test func incomingURLParserReadsTakeItScheme() {
         let nested = URL(string: "takeit://extract?url=https%3A%2F%2Flurl.cc%2Fabc")!
         #expect(IncomingURLParser.shareURL(from: nested) == "https://lurl.cc/abc")

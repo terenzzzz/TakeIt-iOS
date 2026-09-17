@@ -29,11 +29,36 @@ enum MediaType: String, Codable, Equatable, CaseIterable {
     }
 }
 
+struct VideoQuality: Codable, Equatable, Identifiable, Hashable {
+    var url: String
+    var label: String?
+    var width: Int?
+    var height: Int?
+    var bitrate: Int?
+
+    var id: String { url }
+
+    var displayLabel: String {
+        let trimmed = label?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !trimmed.isEmpty { return trimmed }
+        if let height { return "\(height)p" }
+        return "默认"
+    }
+
+    /// 与前端一致：把清晰度标签压成可用于文件名的片段。
+    var filenameSuffix: String {
+        displayLabel
+            .replacingOccurrences(of: "[^\\w\\u4E00-\\u9FA5-]+", with: "-", options: .regularExpression)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+    }
+}
+
 struct MediaItem: Codable, Equatable, Identifiable, Hashable {
     var type: MediaType
     var url: String
     var thumbnail: String?
     var filename: String?
+    var qualities: [VideoQuality]
 
     var id: String { url }
 
@@ -42,11 +67,41 @@ struct MediaItem: Codable, Equatable, Identifiable, Hashable {
         return name.isEmpty ? "download" : name
     }
 
-    init(type: MediaType, url: String, thumbnail: String? = nil, filename: String? = nil) {
+    /// 仅视频有清晰度可选，按后端顺序去重（第一项为最高清晰度）。
+    var qualityOptions: [VideoQuality] {
+        guard type == .video else { return [] }
+        var seen = Set<String>()
+        return qualities.filter { !$0.url.isEmpty && seen.insert($0.url).inserted }
+    }
+
+    func downloadURL(for quality: VideoQuality?) -> String {
+        quality?.url ?? url
+    }
+
+    /// 只有存在多个清晰度时才把标签写进文件名，避免单清晰度改名。
+    func filename(for quality: VideoQuality?) -> String {
+        let base = displayName
+        guard qualityOptions.count > 1, let quality else { return base }
+        let suffix = quality.filenameSuffix
+        guard !suffix.isEmpty else { return base }
+        let path = URL(fileURLWithPath: base)
+        let ext = path.pathExtension
+        guard !ext.isEmpty else { return "\(base)-\(suffix)" }
+        return "\(path.deletingPathExtension().lastPathComponent)-\(suffix).\(ext)"
+    }
+
+    init(
+        type: MediaType,
+        url: String,
+        thumbnail: String? = nil,
+        filename: String? = nil,
+        qualities: [VideoQuality] = []
+    ) {
         self.type = type
         self.url = url
         self.thumbnail = thumbnail
         self.filename = filename
+        self.qualities = qualities
     }
 
     init(from decoder: Decoder) throws {
@@ -55,6 +110,7 @@ struct MediaItem: Codable, Equatable, Identifiable, Hashable {
         url = try container.decode(String.self, forKey: .url)
         thumbnail = try container.decodeIfPresent(String.self, forKey: .thumbnail)
         filename = try container.decodeIfPresent(String.self, forKey: .filename)
+        qualities = try container.decodeIfPresent([VideoQuality].self, forKey: .qualities) ?? []
     }
 }
 

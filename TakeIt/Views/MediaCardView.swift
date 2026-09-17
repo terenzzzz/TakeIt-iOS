@@ -4,9 +4,31 @@ import SwiftUI
 struct MediaCardView: View {
     let item: MediaItem
     @Environment(DownloadManager.self) private var downloader
+    @State private var selectedQualityURL: String?
+
+    private var qualityOptions: [VideoQuality] {
+        item.qualityOptions
+    }
+
+    private var selectedQuality: VideoQuality? {
+        guard !qualityOptions.isEmpty else { return nil }
+        if let selectedQualityURL,
+           let match = qualityOptions.first(where: { $0.url == selectedQualityURL }) {
+            return match
+        }
+        return qualityOptions.first
+    }
+
+    private var activeURL: String {
+        item.downloadURL(for: selectedQuality)
+    }
+
+    private var activeFilename: String {
+        item.filename(for: selectedQuality)
+    }
 
     private var previewURL: URL {
-        APIClient.shared.previewURL(for: item.url, filename: item.displayName)
+        APIClient.shared.previewURL(for: activeURL, filename: activeFilename)
     }
 
     private var thumbnailURL: URL {
@@ -48,41 +70,19 @@ struct MediaCardView: View {
             .aspectRatio(16 / 9, contentMode: .fit)
             .clipped()
 
-            HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text(item.displayName)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.text)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Button {
-                    Task { await downloader.download(item) }
-                } label: {
-                    HStack(spacing: 6) {
-                        if downloading {
-                            if downloadFraction == nil {
-                                ProgressView().controlSize(.mini)
-                            }
-                        } else {
-                            Image(systemName: "arrow.down.to.line")
-                                .font(.system(size: 12, weight: .semibold))
-                        }
-                        Text(downloadButtonTitle)
-                            .monospacedDigit()
+                HStack(spacing: 10) {
+                    if qualityOptions.count > 1 {
+                        qualityPicker
                     }
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.text)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Theme.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Theme.radiusSM, style: .continuous)
-                            .stroke(Theme.border, lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.radiusSM, style: .continuous))
+                    downloadButton
                 }
-                .buttonStyle(.plain)
-                .disabled(downloading)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -97,16 +97,89 @@ struct MediaCardView: View {
         .shadow(color: .black.opacity(0.05), radius: 4, y: 1)
         .contextMenu {
             Button {
-                Task { await downloader.download(item) }
+                Task { await downloader.download(item, quality: selectedQuality) }
             } label: {
                 Label("下载", systemImage: "arrow.down.to.line")
             }
-            if let shareURL = URL(string: item.url) {
+            if let shareURL = URL(string: activeURL) {
                 ShareLink(item: shareURL) {
                     Label("分享原链接", systemImage: "square.and.arrow.up")
                 }
             }
         }
+    }
+
+    private var qualityPicker: some View {
+        Menu {
+            ForEach(qualityOptions) { quality in
+                Button {
+                    selectedQualityURL = quality.url
+                } label: {
+                    if quality.url == activeURL {
+                        Label(quality.displayLabel, systemImage: "checkmark")
+                    } else {
+                        Text(quality.displayLabel)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text("清晰度")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textMuted)
+                Text(selectedQuality?.displayLabel ?? "")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.text)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Theme.textMuted)
+            }
+            .padding(.horizontal, 12)
+            .frame(height: 40)
+            .frame(maxWidth: .infinity)
+            .background(Theme.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.radiusSM, style: .continuous)
+                    .stroke(Theme.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: Theme.radiusSM, style: .continuous))
+        }
+        .menuOrder(.fixed)
+        .buttonStyle(.plain)
+        .disabled(downloading)
+        .accessibilityLabel("选择视频清晰度")
+    }
+
+    private var downloadButton: some View {
+        Button {
+            Task { await downloader.download(item, quality: selectedQuality) }
+        } label: {
+            HStack(spacing: 6) {
+                if downloading {
+                    if downloadFraction == nil {
+                        ProgressView()
+                            .controlSize(.mini)
+                            .tint(Theme.primaryText)
+                    }
+                } else {
+                    Image(systemName: "arrow.down.to.line")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                Text(downloadButtonTitle)
+                    .monospacedDigit()
+            }
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(Theme.primaryText)
+            .padding(.horizontal, 16)
+            .frame(height: 40)
+            .frame(minWidth: qualityOptions.count > 1 ? 104 : nil, maxWidth: qualityOptions.count > 1 ? nil : .infinity)
+            .background(Theme.primary)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.radiusSM, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(downloading)
     }
 
     @ViewBuilder
@@ -128,9 +201,10 @@ struct MediaCardView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .video:
             LoopingVideoPreview(
-                stream: MediaPlayback.videoStream(originalURL: item.url, proxyURL: previewURL),
+                stream: MediaPlayback.videoStream(originalURL: activeURL, proxyURL: previewURL),
                 posterURL: (item.thumbnail?.isEmpty == false) ? thumbnailURL : nil
             )
+            .id(activeURL)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .audio:
             VStack(spacing: 12) {

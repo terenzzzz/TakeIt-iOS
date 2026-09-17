@@ -32,7 +32,7 @@ final class DownloadManager {
         return "\(current)/\(batchTotal)"
     }
 
-    func download(_ item: MediaItem) async {
+    func download(_ item: MediaItem, quality: VideoQuality? = nil) async {
         downloadingIDs.insert(item.url)
         progress[item.url] = 0
         defer {
@@ -42,12 +42,13 @@ final class DownloadManager {
 
         do {
             let id = item.url
+            let filename = item.filename(for: quality)
             let (data, contentType) = try await APIClient.shared.downloadData(
-                mediaURL: item.url,
-                filename: item.displayName,
+                mediaURL: item.downloadURL(for: quality),
+                filename: filename,
                 onProgress: reportProgress(id: id)
             )
-            let fileURL = try MediaSaver.save(data, item: item, contentType: contentType)
+            let fileURL = try MediaSaver.save(data, item: item, filename: filename, contentType: contentType)
             sharePayload = SharePayload(urls: [fileURL])
         } catch {
             toastMessage = friendlyMessage(for: error)
