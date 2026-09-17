@@ -132,10 +132,15 @@ final class ShareViewController: UIViewController {
     }
 
     private func openWithSharedApplication(_ url: URL, completion: @escaping (Bool) -> Void) {
-        if let app = Self.sharedApplication() {
-            app.open(url, options: [:]) { success in
+        let selector = NSSelectorFromString("openURL:options:completionHandler:")
+        if let app = Self.sharedApplicationObject(),
+           app.responds(to: selector),
+           let imp = app.method(for: selector) {
+            typealias OpenFn = @convention(c) (AnyObject, Selector, URL, NSDictionary, ((Bool) -> Void)?) -> Void
+            let handler: (Bool) -> Void = { success in
                 DispatchQueue.main.async { completion(success) }
             }
+            unsafeBitCast(imp, to: OpenFn.self)(app, selector, url, [:], handler)
             return
         }
         completion(openWithResponder(url))
@@ -155,10 +160,12 @@ final class ShareViewController: UIViewController {
         return false
     }
 
-    private static func sharedApplication() -> UIApplication? {
+    /// Avoid linking UIApplication APIs directly — required when APPLICATION_EXTENSION_API_ONLY=YES.
+    private static func sharedApplicationObject() -> NSObject? {
+        guard let applicationClass = NSClassFromString("UIApplication") as? NSObject.Type else { return nil }
         let selector = NSSelectorFromString("sharedApplication")
-        guard UIApplication.responds(to: selector) else { return nil }
-        return UIApplication.perform(selector)?.takeUnretainedValue() as? UIApplication
+        guard applicationClass.responds(to: selector) else { return nil }
+        return applicationClass.perform(selector)?.takeUnretainedValue() as? NSObject
     }
 
     private func finish() {

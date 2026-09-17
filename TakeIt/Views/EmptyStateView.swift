@@ -1,15 +1,21 @@
 import SwiftUI
 
 struct EmptyStateView: View {
+    private let platforms = [
+        "twitter", "instagram", "douyin", "xiaohongshu", "myppt", "lurl", "pptcc",
+    ]
+
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
+
     var body: some View {
         VStack(spacing: 14) {
             Text("支持的平台")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Theme.textMuted)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 86), spacing: 8)], spacing: 8) {
-                ForEach(["MyPPT.cc", "LURL.cc", "PPT.cc", "Twitter / X", "Instagram"], id: \.self) { name in
-                    chip(name)
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(platforms, id: \.self) { platform in
+                    chip(PlatformStyle.style(for: platform).name)
                 }
             }
         }
@@ -28,9 +34,11 @@ struct EmptyStateView: View {
         Text(text)
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(Theme.surface)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 7)
             .overlay(Capsule().stroke(Theme.border, lineWidth: 1))
             .clipShape(Capsule())
     }

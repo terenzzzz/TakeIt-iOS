@@ -104,7 +104,7 @@ struct ContentView: View {
         VStack(spacing: 10) {
             Text("Paste it. Take it. Save it.")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Theme.textMuted)
+                .foregroundStyle(Theme.textSecondary)
                 .tracking(1.4)
                 .textCase(.uppercase)
 
@@ -117,7 +117,7 @@ struct ContentView: View {
 
             Text("粘贴分享链接，即可批量解析与下载原质图片与视频。")
                 .font(.system(size: 15))
-                .foregroundStyle(Theme.textMuted)
+                .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 560)
         }

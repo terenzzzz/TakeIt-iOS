@@ -49,7 +49,8 @@ enum Theme {
 
     static let text = Color(light: Color(hex: 0x09090B), dark: Color(hex: 0xFAFAFA))
     static let textSecondary = Color(light: Color(hex: 0x3F3F46), dark: Color(hex: 0xA1A1AA))
-    static let textMuted = Color(hex: 0x71717A)
+    // Light needs a deeper muted gray so body copy stays readable on #FAFAFA.
+    static let textMuted = Color(light: Color(hex: 0x52525B), dark: Color(hex: 0xA1A1AA))
 
     static let border = Color(light: Color(hex: 0xE4E4E7), dark: Color(hex: 0xFFFFFF, alpha: 0.10))
     static let borderHover = Color(light: Color(hex: 0xD4D4D8), dark: Color(hex: 0xFFFFFF, alpha: 0.22))
@@ -71,42 +72,42 @@ struct PlatformStyle: Equatable {
 
     static func style(for platform: String) -> PlatformStyle {
         switch platform.lowercased() {
-        case "myppt":
+        case "myppt", "myppt.cc":
             return PlatformStyle(
-                name: "MyPPT",
+                name: "MyPPT.cc",
                 color: Color(hex: 0x3B82F6),
                 background: Color(hex: 0x3B82F6, alpha: 0.12),
                 border: Color(hex: 0x3B82F6, alpha: 0.25)
             )
-        case "lurl":
+        case "lurl", "lurl.cc":
             return PlatformStyle(
-                name: "LURL",
+                name: "LURL.cc",
                 color: Color(hex: 0x10B981),
                 background: Color(hex: 0x10B981, alpha: 0.12),
                 border: Color(hex: 0x10B981, alpha: 0.25)
             )
-        case "pptcc":
+        case "pptcc", "ppt.cc":
             return PlatformStyle(
                 name: "PPT.cc",
                 color: Color(hex: 0xF97316),
                 background: Color(hex: 0xF97316, alpha: 0.12),
                 border: Color(hex: 0xF97316, alpha: 0.25)
             )
-        case "twitter":
+        case "twitter", "twitter / x", "x":
             return PlatformStyle(
                 name: "Twitter / X",
                 color: Color(light: Color(hex: 0x18181B), dark: Color(hex: 0xE2E8F0)),
                 background: Color(hex: 0xE2E8F0, alpha: 0.12),
                 border: Color(hex: 0xE2E8F0, alpha: 0.25)
             )
-        case "xiaohongshu", "xhs", "redbook", "rednote":
+        case "xiaohongshu", "xhs", "redbook", "rednote", "小红书":
             return PlatformStyle(
                 name: "小红书",
                 color: Color(hex: 0xFF2442),
                 background: Color(hex: 0xFF2442, alpha: 0.12),
                 border: Color(hex: 0xFF2442, alpha: 0.25)
             )
-        case "douyin", "tiktok":
+        case "douyin", "tiktok", "抖音":
             return PlatformStyle(
                 name: "抖音",
                 color: Color(light: Color(hex: 0x161823), dark: Color(hex: 0xFE2C55)),
